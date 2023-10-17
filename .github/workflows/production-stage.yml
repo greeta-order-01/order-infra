@@ -1,0 +1,28 @@
+name: Production Stage
+
+on:
+  repository_dispatch:
+    types: [app_delivery]
+
+jobs:
+  update:
+    name: Update application version
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      APP_NAME: ${{ github.event.client_payload.app_name }}
+      APP_VERSION: ${{ github.event.client_payload.app_version }}
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Update image version
+        run: |
+          cd module-app
+          sed -i "s/order-service:.*\"/order-service:${{ env.APP_VERSION }}\"/" c9-01-order-service.tf
+          sed -i "s/gateway-service:.*\"/gateway-service:${{ env.APP_VERSION }}\"/" c9-02-gateway-service.tf
+      - name: Commit updated manifests
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update ${{ env.APP_NAME }} to version ${{ env.APP_VERSION }}"
+          branch: master
