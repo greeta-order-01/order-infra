@@ -52,7 +52,7 @@ resource "kubernetes_ingress_v1" "ingress_default" {
     }     
 
     rule {
-      host = "api.greeta.net"
+      host = "order.greeta.net"
       http {
 
         path {
@@ -91,25 +91,25 @@ resource "kubernetes_ingress_v1" "ingress_default" {
       }
     }
 
-    rule {
-      host = "order.greeta.net"
-      http {
+    # rule {
+    #   host = "order.greeta.net"
+    #   http {
 
-        path {
-          backend {
-            service {
-              name = "order-ui"
-              port {
-                number = 4200
-              }
-            }
-          }
+    #     path {
+    #       backend {
+    #         service {
+    #           name = "order-ui"
+    #           port {
+    #             number = 4200
+    #           }
+    #         }
+    #       }
 
-          path = "/"
-          path_type = "Prefix"
-        }
-      }
-    }                  
+    #       path = "/"
+    #       path_type = "Prefix"
+    #     }
+    #   }
+    # }                  
     
   }
 }

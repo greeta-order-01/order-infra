@@ -1,22 +1,22 @@
-resource "kubernetes_config_map_v1" "order" {
+resource "kubernetes_config_map_v1" "erp" {
   metadata {
-    name      = "order"
+    name      = "erp"
     labels = {
-      app = "order"
+      app = "erp"
     }
   }
 
   data = {
-    "application.yml" = file("${path.module}/app-conf/order.yml")
+    "application.yml" = file("${path.module}/app-conf/erp.yml")
   }
 }
 
-resource "kubernetes_deployment_v1" "order_deployment" {
+resource "kubernetes_deployment_v1" "erp_deployment" {
   depends_on = [kubernetes_deployment_v1.order_postgres_deployment]
   metadata {
-    name = "order"
+    name = "erp"
     labels = {
-      app = "order"
+      app = "erp"
     }
   }
  
@@ -24,13 +24,13 @@ resource "kubernetes_deployment_v1" "order_deployment" {
     replicas = 1
     selector {
       match_labels = {
-        app = "order"
+        app = "erp"
       }
     }
     template {
       metadata {
         labels = {
-          app = "order"
+          app = "erp"
         }
         annotations = {
           "prometheus.io/scrape" = "true"
@@ -42,16 +42,12 @@ resource "kubernetes_deployment_v1" "order_deployment" {
         service_account_name = "spring-cloud-kubernetes"      
         
         container {
-          image = "ghcr.io/greeta-order-01/order-service:b61cdd336155dce8eb03c6065b840e08efb24bb7"
-          name  = "order"
+          image = "ghcr.io/greeta-order-01/erp-service:b61cdd336155dce8eb03c6065b840e08efb24bb7"
+          name  = "erp"
           image_pull_policy = "Always"
           port {
             container_port = 8080
-          }
-          env {
-            name = "SPRING_DATASOURCE_URL"
-            value = "jdbc:postgresql://order-postgres:5432/orderdb"
-          }            
+          }          
           env {
             name  = "SPRING_CLOUD_BOOTSTRAP_ENABLED"
             value = "true"
@@ -69,7 +65,7 @@ resource "kubernetes_deployment_v1" "order_deployment" {
 
           env {
             name  = "OTEL_SERVICE_NAME"
-            value = "order"
+            value = "erp"
           }
 
           env {
@@ -125,9 +121,9 @@ resource "kubernetes_deployment_v1" "order_deployment" {
   }
 }
 
-resource "kubernetes_horizontal_pod_autoscaler_v1" "order_hpa" {
+resource "kubernetes_horizontal_pod_autoscaler_v1" "erp_hpa" {
   metadata {
-    name = "order-hpa"
+    name = "erp-hpa"
   }
   spec {
     max_replicas = 2
@@ -135,24 +131,24 @@ resource "kubernetes_horizontal_pod_autoscaler_v1" "order_hpa" {
     scale_target_ref {
       api_version = "apps/v1"
       kind = "Deployment"
-      name = kubernetes_deployment_v1.order_deployment.metadata[0].name 
+      name = kubernetes_deployment_v1.erp_deployment.metadata[0].name 
     }
     target_cpu_utilization_percentage = 70
   }
 }
 
-resource "kubernetes_service_v1" "order_service" {
-  depends_on = [kubernetes_deployment_v1.order_deployment]
+resource "kubernetes_service_v1" "erp_service" {
+  depends_on = [kubernetes_deployment_v1.erp_deployment]
   metadata {
-    name = "order"
+    name = "erp"
     labels = {
-      app = "order"
+      app = "erp"
       spring-boot = "true"
     }
   }
   spec {
     selector = {
-      app = "order"
+      app = "erp"
     }
     port {
       port = 8080

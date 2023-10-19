@@ -20,7 +20,8 @@ jobs:
         run: |
           cd module-app
           sed -i "s/order-service:.*\"/order-service:${{ env.APP_VERSION }}\"/" c9-01-order-service.tf
-          sed -i "s/gateway-service:.*\"/gateway-service:${{ env.APP_VERSION }}\"/" c9-02-gateway-service.tf
+          sed -i "s/erp-service:.*\"/erp-service:${{ env.APP_VERSION }}\"/" c9-02-erp-service.tf
+          sed -i "s/gateway-service:.*\"/gateway-service:${{ env.APP_VERSION }}\"/" c9-03-gateway-service.tf
       - name: Commit updated manifests
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
