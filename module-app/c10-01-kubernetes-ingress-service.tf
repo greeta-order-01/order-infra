@@ -1,9 +1,11 @@
 resource "kubernetes_ingress_v1" "ingress_default" {
   depends_on = [helm_release.loadbalancer_controller,
                 helm_release.external_dns,
-                kubernetes_service_v1.order_ui_service,
+                #kubernetes_service_v1.order_ui_service,
                 kubernetes_service_v1.gateway_service,
-                kubernetes_service_v1.order_service]
+                kubernetes_service_v1.erp_service,
+                kubernetes_service_v1.order_service,
+                kubernetes_ingress_class_v1.ingress_class_default]
   wait_for_load_balancer = true
   metadata {
     name = "ingress-default"
@@ -121,9 +123,13 @@ resource "kubernetes_ingress_v1" "ingress_default" {
 resource "kubernetes_ingress_v1" "ingress_observability_stack" {
   depends_on = [helm_release.loadbalancer_controller,
                 helm_release.external_dns,
-                kubernetes_service_v1.order_ui_service,
+                #kubernetes_service_v1.order_ui_service,
                 kubernetes_service_v1.gateway_service,
-                kubernetes_service_v1.order_service]
+                kubernetes_service_v1.erp_service,
+                kubernetes_service_v1.order_service,
+                null_resource.deploy_grafana_script,
+                null_resource.update_kubeconfig,
+                kubernetes_ingress_class_v1.ingress_class_default]
   wait_for_load_balancer = true
   metadata {
     name = "ingress-grafana"
@@ -131,7 +137,7 @@ resource "kubernetes_ingress_v1" "ingress_observability_stack" {
     annotations = {
       # Load Balancer Name
       "alb.ingress.kubernetes.io/group.name" = "order-lb"
-      "alb.ingress.kubernetes.io/load-balancer-name" = "ingress-grafana"
+      "alb.ingress.kubernetes.io/load-balancer-name" = "ingress-default"
       # Ingress Core Settings
       "alb.ingress.kubernetes.io/scheme" = "internet-facing"
       # Health Check Settings
@@ -159,17 +165,7 @@ resource "kubernetes_ingress_v1" "ingress_observability_stack" {
   }
 
   spec {
-    ingress_class_name = "my-aws-ingress-class"
-
-    default_backend {
-     
-      service {
-        name = "loki-stack-grafana"
-        port {
-          number = 80
-        }
-      }
-    }       
+    ingress_class_name = "my-aws-ingress-class"     
 
     rule {
       host = "grafana.greeta.net"
