@@ -5,6 +5,7 @@ resource "kubernetes_ingress_v1" "ingress_default" {
                 kubernetes_service_v1.gateway_service,
                 kubernetes_service_v1.erp_service,
                 kubernetes_service_v1.order_service,
+                kubernetes_service_v1.keycloak_server_service,
                 kubernetes_ingress_class_v1.ingress_class_default]
   wait_for_load_balancer = true
   metadata {
@@ -54,7 +55,7 @@ resource "kubernetes_ingress_v1" "ingress_default" {
     }     
 
     rule {
-      host = "order.greeta.net"
+      host = "orderapi.greeta.net"
       http {
 
         path {
@@ -93,25 +94,25 @@ resource "kubernetes_ingress_v1" "ingress_default" {
       }
     }
 
-    # rule {
-    #   host = "order.greeta.net"
-    #   http {
+    rule {
+      host = "order.greeta.net"
+      http {
 
-    #     path {
-    #       backend {
-    #         service {
-    #           name = "order-ui"
-    #           port {
-    #             number = 4200
-    #           }
-    #         }
-    #       }
+        path {
+          backend {
+            service {
+              name = "order-ui"
+              port {
+                number = 4200
+              }
+            }
+          }
 
-    #       path = "/"
-    #       path_type = "Prefix"
-    #     }
-    #   }
-    # }                  
+          path = "/"
+          path_type = "Prefix"
+        }
+      }
+    }                  
     
   }
 }
@@ -127,6 +128,8 @@ resource "kubernetes_ingress_v1" "ingress_observability_stack" {
                 kubernetes_service_v1.gateway_service,
                 kubernetes_service_v1.erp_service,
                 kubernetes_service_v1.order_service,
+                kubernetes_service_v1.keycloak_server_service,
+                kubernetes_service_v1.grafana_service_bridge,
                 null_resource.deploy_grafana_script,
                 null_resource.update_kubeconfig,
                 kubernetes_ingress_class_v1.ingress_class_default]
